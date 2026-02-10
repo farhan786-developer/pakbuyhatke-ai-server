@@ -21,7 +21,7 @@ client = None
 
 try:
     client=genai.Client(api_key=GEMINI_API_KEY)
-   client.models.generate_content(model="gemini-1.5-flash", contents="test")
+    client.models.generate_content(model="gemini-1.5-flash", contents="test")
 
     AI_ENABLED = True
     print("✅ Gemini AI: Connected successfully")
