@@ -14,8 +14,13 @@ import signal
 app = Flask(__name__)
 CORS(app)
 
+
+GEMINI_API_KEY = "AIzaSyCS_iFTMJ7MqpWhKhvrUlhO_SLcJsL-_L4"
+AI_ENABLED = False
+client = None
+SELECTED_MODEL = None
 # Gemini API Configuration (Pre-configured for production)
-# --- SMART MODEL SCANNER (Fixed for New SDK) ---
+
 def initialize_ai():
     global client, SELECTED_MODEL, AI_ENABLED
     try:
