@@ -19,7 +19,7 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyCS_iFTMJ7MqpWhKhvrUlhO_SLcJs
 AI_ENABLED = False
 
 try:
-    genai.configure(api_key=GEMINI_API_KEY)
+    genai.Client(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel('gemini-pro')
     # Test connection
     model.generate_content("test")
