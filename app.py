@@ -21,7 +21,7 @@ client = None
 
 try:
     client=genai.Client(api_key=GEMINI_API_KEY)
-    client.models.generate_content(model="gemini-2.0-flash", contents="test")
+    client.models.generate_content(model="gemini-1.5-flash-001", contents="test")
 
     AI_ENABLED = True
     print("✅ Gemini AI: Connected successfully")
@@ -76,7 +76,7 @@ Examples:
 
 Now clean this title (reply with ONLY the cleaned version, no explanation):"""
 
-        response = client.models.generate_content(model="gemini-2.0-flash",
+        response = client.models.generate_content(model="gemini-1.5-flash-001",
             contents=prompt)
         cleaned = response.text.strip()
         
