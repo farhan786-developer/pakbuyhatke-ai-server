@@ -17,12 +17,12 @@ CORS(app)
 # Gemini API Configuration (Pre-configured for production)
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyCS_iFTMJ7MqpWhKhvrUlhO_SLcJsL-_L4')
 AI_ENABLED = False
+client = None
 
 try:
-    genai.Client(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-pro')
-    # Test connection
-    model.generate_content("test")
+    client=genai.Client(api_key=GEMINI_API_KEY)
+   client.models.generate_content(model="gemini-1.5-flash", contents="test")
+
     AI_ENABLED = True
     print("✅ Gemini AI: Connected successfully")
 except Exception as e:
@@ -76,7 +76,8 @@ Examples:
 
 Now clean this title (reply with ONLY the cleaned version, no explanation):"""
 
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(model="gemini-1.5-flash",
+            contents=prompt)
         cleaned = response.text.strip()
         
         # Cancel alarm
