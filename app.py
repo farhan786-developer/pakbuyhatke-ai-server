@@ -15,20 +15,67 @@ app = Flask(__name__)
 CORS(app)
 
 # Gemini API Configuration (Pre-configured for production)
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyCS_iFTMJ7MqpWhKhvrUlhO_SLcJsL-_L4')
+# --- CONFIGURATION ---
+GEMINI_API_KEY = "AIzaSyCS_iFTMJ7MqpWhKhvrUlhO_SLcJsL-_L4"
 AI_ENABLED = False
 client = None
+SELECTED_MODEL = None
 
-try:
-    client=genai.Client(api_key=GEMINI_API_KEY)
-    client.models.generate_content(model="gemini-1.5-flash-001", contents="test")
+# --- SMART MODEL SCANNER (Ye Naya Logic Hai) ---
+def initialize_ai():
+    global client, SELECTED_MODEL, AI_ENABLED
+    try:
+        # 1. Client Banao
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        
+        print("\n🔍 Scanning available models from Google...")
+        
+        # 2. Google se list maango
+        all_models = list(client.models.list())
+        
+        # 3. List mein se 'generateContent' wale models dhoondo
+        viable_models = []
+        for m in all_models:
+            if "generateContent" in m.supported_generation_methods:
+                clean_name = m.name.replace("models/", "")
+                viable_models.append(clean_name)
+                print(f"   - Found: {clean_name}")
 
-    AI_ENABLED = True
-    print("✅ Gemini AI: Connected successfully")
-except Exception as e:
-    print(f"⚠️ Gemini AI initialization failed: {e}")
-    print("🔧 Fallback to regex mode enabled")
+        # 4. Hamari Pasand (Priority List)
+        preferences = [
+            "gemini-1.5-flash",
+            "gemini-1.5-flash-001",
+            "gemini-1.5-flash-latest",
+            "gemini-1.5-flash-8b",
+            "gemini-1.0-pro",
+            "gemini-pro"
+        ]
 
+        # 5. Match karo: Jo pehla mile usay utha lo
+        for pref in preferences:
+            if pref in viable_models:
+                SELECTED_MODEL = pref
+                break
+        
+        # Agar preference wala na mile, to Google ki list ka pehla utha lo
+        if not SELECTED_MODEL and viable_models:
+            SELECTED_MODEL = viable_models[0]
+
+        if SELECTED_MODEL:
+            print(f"✅ LOCKED MODEL: {SELECTED_MODEL}")
+            # Final Test call
+            client.models.generate_content(model=SELECTED_MODEL, contents="Test")
+            AI_ENABLED = True
+            print("🚀 AI System Ready & Connected")
+        else:
+            print("❌ No valid Gemini models found in your account.")
+
+    except Exception as e:
+        print(f"⚠️ Initialization Failed: {e}")
+        print("🔧 Fallback to regex mode enabled")
+
+# Run Scanner on Startup
+initialize_ai()
 # Cache for performance (1000 products)
 @lru_cache(maxsize=1000)
 def cached_clean_title(title):
