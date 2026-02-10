@@ -15,33 +15,27 @@ app = Flask(__name__)
 CORS(app)
 
 # Gemini API Configuration (Pre-configured for production)
-# --- CONFIGURATION ---
-GEMINI_API_KEY = "AIzaSyCS_iFTMJ7MqpWhKhvrUlhO_SLcJsL-_L4"
-AI_ENABLED = False
-client = None
-SELECTED_MODEL = None
-
-# --- SMART MODEL SCANNER (Ye Naya Logic Hai) ---
+# --- SMART MODEL SCANNER (Fixed for New SDK) ---
 def initialize_ai():
     global client, SELECTED_MODEL, AI_ENABLED
     try:
-        # 1. Client Banao
         client = genai.Client(api_key=GEMINI_API_KEY)
         
         print("\n🔍 Scanning available models from Google...")
         
-        # 2. Google se list maango
+        # Google se models mangwao
+        # Note: New SDK return objects, we just need .name
         all_models = list(client.models.list())
         
-        # 3. List mein se 'generateContent' wale models dhoondo
-        viable_models = []
+        available_names = []
         for m in all_models:
-            if "generateContent" in m.supported_generation_methods:
+            # Sirf naam uthao aur "models/" hata do
+            if hasattr(m, 'name'):
                 clean_name = m.name.replace("models/", "")
-                viable_models.append(clean_name)
+                available_names.append(clean_name)
                 print(f"   - Found: {clean_name}")
 
-        # 4. Hamari Pasand (Priority List)
+        # Hamari Pasand (Priority List)
         preferences = [
             "gemini-1.5-flash",
             "gemini-1.5-flash-001",
@@ -51,24 +45,28 @@ def initialize_ai():
             "gemini-pro"
         ]
 
-        # 5. Match karo: Jo pehla mile usay utha lo
+        # Match karo
         for pref in preferences:
-            if pref in viable_models:
+            if pref in available_names:
                 SELECTED_MODEL = pref
                 break
         
-        # Agar preference wala na mile, to Google ki list ka pehla utha lo
-        if not SELECTED_MODEL and viable_models:
-            SELECTED_MODEL = viable_models[0]
+        # Fallback: Agar list mein se kuch na mile, to pehla "gemini" model utha lo
+        if not SELECTED_MODEL and available_names:
+            gemini_models = [m for m in available_names if "gemini" in m]
+            if gemini_models:
+                SELECTED_MODEL = gemini_models[0]
+            else:
+                SELECTED_MODEL = available_names[0]
 
         if SELECTED_MODEL:
             print(f"✅ LOCKED MODEL: {SELECTED_MODEL}")
-            # Final Test call
+            # Final Test
             client.models.generate_content(model=SELECTED_MODEL, contents="Test")
             AI_ENABLED = True
             print("🚀 AI System Ready & Connected")
         else:
-            print("❌ No valid Gemini models found in your account.")
+            print("❌ No valid models found.")
 
     except Exception as e:
         print(f"⚠️ Initialization Failed: {e}")
